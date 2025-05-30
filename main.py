@@ -35,11 +35,13 @@ app = FastAPI()
 # Request model
 class EvalRequest(BaseModel):
     expression: str
+    envInput: dict
 
 
 @app.post("/evaluate")
 async def evaluate(data: EvalRequest):
     expression = data.expression
+    envInput = data.envInput
     try:
         shutil.copy("wasi_eval.wasm", "/tmp/wasi_eval.wasm")
         wasm = Path("/tmp/wasi_eval.wasm").read_bytes()
@@ -49,7 +51,7 @@ async def evaluate(data: EvalRequest):
         with extism.Plugin(manifest, wasi=True) as plugin:
             result = plugin.call(
                 "exec",
-                json.dumps({"expression": expression, "envInput": {}}),
+                json.dumps({"expression": expression, "envInput": envInput}),
                 parse=lambda output: json.loads(bytes(output).decode("utf-8")),
             )
 
