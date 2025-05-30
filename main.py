@@ -1,3 +1,25 @@
+import subprocess
+import sys
+
+
+def install_requirements():
+    try:
+        # Avoid re-installing every time if already present
+        import uvicorn
+    except ImportError:
+        print("Installing requirements manually...")
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "--upgrade", "pip"]
+        )
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "-r", "requirements.txt"]
+        )
+        import uvicorn
+
+
+install_requirements()
+
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
@@ -39,3 +61,9 @@ async def evaluate(data: EvalRequest):
 @app.get("/")
 def home():
     return {"message": "Extism API Running!"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=False)
